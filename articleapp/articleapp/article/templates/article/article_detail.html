@@ -1,0 +1,11 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <div style="margin:50px;">
+        <h2>{{ article.id }}</h2>
+        <h1>{{ article.title }}</h1>
+        <p>{{ article.body }}</p>
+        <p>by {{ article.author }} 님</p>
+        <p>{{ article.create_date }}</p>
+    </div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base_generic.html" %}   
+
+{% block content %}
+<h1 style="margin:50px;">About Us</h1>
+<div class="container-fluid" style="margin:50px;">
+        <div class='row'>
+            <div class='col-sm-3'>
+              <h1>피카츄</h1>
+            </div>
+            <div class='col-sm-3'>
+              <h1>파이리</h1>
+            </div>
+            <div class='col-sm-3'>
+              <h1>꼬부기</h1>
+            </div>
+        </div>
+        <div class='row'>
+          {% load static %}
+          <div class='col-sm-3'><img src="{% static 'images/pikachu.jpg' %}" style="width: 100px; height:100px;"></div>
+          {% load static %}
+          <div class='col-sm-3'><img src="{% static 'images/p.gif' %}" style="width: 100px; height:100px;"></div>
+          {% load static %}
+          <div class='col-sm-3'><img src="{% static 'images/turtle.png' %}" style="width: 100px; height:100px;"></div>
+        </div>
+</div>
+
+  
+
+{% endblock %}
