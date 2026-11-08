@@ -61,17 +61,41 @@ def build(ep: Episode, workdir: Path, use_tts: bool = True) -> dict:
             p = workdir / f"seg{k:02d}.mp3"
             words = tts.synth(text, ANCHORS[spk]["voice"], p)
             wav = audio.load_audio(p)
-            dur = len(wav) / SR
+            # TTS clips carry ~0.5-1s of trailing silence: cut right after the last word
+            end = min(len(wav) / SR, words[-1]["e"] + 0.12) if words else len(wav) / SR
+            wav = wav[: int(end * SR)]
+            fade = min(len(wav), int(0.03 * SR))
+            wav[-fade:] *= np.linspace(1, 0, fade)
+            dur = end
         else:
             words, wav = tts.estimate(text), None
             dur = words[-1]["e"] + 0.1
         clips.append({"kind": kind, "spk": spk, "idx": idx, "words": words, "wav": wav, "dur": dur})
 
     # fit into MAX_SECONDS by time-compressing speech if needed (max 1.2x)
-    def total(cl):
-        return sum(max(c["dur"], INTRO_MIN if c["kind"] == "intro" else 0) + GAP for c in cl) + 1.2
+    def lead(c):
+        return 0.35 if c["kind"] == "news" else 0.25
 
-    speed = min(1.2, max(1.0, total(clips) / (MAX_SECONDS - 0.2)))
+    def fixed(cl):   # time that does not shrink with speech speed
+        return sum(lead(c) + TAIL + GAP * 0.5 for c in cl) + 0.6
+
+    def total(cl, sp=1.0):
+        t = 0.0
+        for c in cl:
+            seg = c["dur"] / sp + lead(c)
+            if c["kind"] == "intro":
+                seg = max(seg, INTRO_MIN)
+            if c["kind"] == "outro":
+                seg = max(seg + TAIL, 2.6) - TAIL
+            t += seg + TAIL + GAP * 0.5
+        return t + 0.6
+
+    target = MAX_SECONDS - 0.3
+    speed = 1.0
+    while total(clips, speed) > target and speed < 1.25:
+        speed += 0.01
+    if total(clips, speed) > target:
+        raise RuntimeError(f"script too long: {total(clips, speed):.1f}s even at {speed:.2f}x — shorten narration")
     if speed > 1.0:
         for c in clips:
             c["dur"] /= speed
