@@ -1,0 +1,49 @@
+{
+  "date_label": "11.08 (일) · 샘플",
+  "intro": {
+    "line": "좋은 아침! 밤사이 뉴스 4개, 30초 컷 갑니다!",
+    "title_lines": ["11월 8일", "아침 30초 ⚡"],
+    "sub": "밤사이 꼭 알아야 할 뉴스 4개",
+    "teasers": ["코스피 2,600", "환율 뚝", "반도체 역대 최대"]
+  },
+  "items": [
+    {
+      "category": "증시",
+      "headline": "코스피 2,600 탈환",
+      "highlight": "탈환",
+      "narration": "코스피가 외국인 매수에 1.2% 오르며 2,600선을 다시 넘었습니다.",
+      "viz": {"kind": "counter", "label": "코스피 종가", "value": 2603.41, "decimals": 2, "delta": "+1.2%", "direction": "up"},
+      "meme": {"id": "gabojago", "text": "가보자고", "emoji": "🚀"},
+      "source_ids": ["sample"]
+    },
+    {
+      "category": "경제",
+      "headline": "환율 하룻밤새 18원 뚝",
+      "highlight": "뚝",
+      "narration": "원 달러 환율은 하룻밤 새 18원 내려 1,350원대. 해외직구족엔 희소식이죠.",
+      "viz": {"kind": "versus", "left": {"label": "어제", "value": "1,372원"}, "right": {"label": "오늘", "value": "1,354원"}},
+      "meme": {"id": "lucky-vicky", "text": "직구족 럭키비키", "emoji": "🍀"},
+      "source_ids": ["sample"]
+    },
+    {
+      "category": "IT",
+      "headline": "반도체 수출 역대 최대",
+      "highlight": "역대",
+      "narration": "반도체 수출은 10월 기준 역대 최대! AI 메모리가 효자 노릇을 했습니다.",
+      "viz": {"kind": "stamp", "text": "역대 최대", "sub": "10월 반도체 수출 · AI 메모리 견인"},
+      "meme": {"id": "form-michyeotda", "text": "폼 미쳤다", "emoji": "🔥"},
+      "source_ids": ["sample"]
+    },
+    {
+      "category": "날씨",
+      "headline": "내일 아침 첫 영하권",
+      "highlight": "영하권",
+      "narration": "내일 아침 서울은 영하 2도. 패딩 꼭 챙기세요!",
+      "viz": {"kind": "keyword", "emoji": "🥶", "text": "서울 -2℃ 패딩 필수"},
+      "meme": {"id": "kkongkkong", "text": "꽁꽁 얼어붙은 출근길", "emoji": "🧊"},
+      "source_ids": ["sample"]
+    }
+  ],
+  "outro": {"line": "오늘도 힘내세요! 내일 아침에 또 만나요.", "cta": "오늘 제일 놀란 뉴스는? 댓글로 ㄱㄱ 👇"},
+  "youtube": {"title": "[샘플] 11월 8일 아침 30초 뉴스 ⚡ 코스피 2,600 탈환 #Shorts", "description": "샘플 에피소드", "tags": ["뉴스", "아침뉴스", "Shorts"]}
+}

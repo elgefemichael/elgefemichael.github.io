@@ -1,0 +1,32 @@
+name: Weekly Korean meme learning
+
+on:
+  schedule:
+    - cron: "0 18 * * 0"      # Sunday 18:00 UTC = Monday 03:00 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: shorts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install anthropic pydantic
+      - name: Research trending memes and update data/memes.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m pipeline.memes update
+      - name: Commit
+        run: |
+          git config user.name "meme-bot"
+          git config user.email "meme-bot@users.noreply.github.com"
+          git add data/memes.json
+          git diff --cached --quiet || (git commit -m "memes: weekly update $(date -u +%F)" && git push)
