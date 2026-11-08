@@ -131,3 +131,22 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: #05081
 #wipe i:nth-child(3) { background: #fff; }
 #wipe i:nth-child(4) { background: var(--ink); }
 #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+
+/* ---------- live-action anchors (keyed video) ---------- */
+#live-dock { position: absolute; inset: 0; pointer-events: none; }
+.live-anchor { position: absolute; display: none; transform-origin: 50% 100%; }
+.live-anchor video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%;
+  filter: contrast(1.04) saturate(1.06) drop-shadow(0 0 26px color-mix(in srgb, var(--c2) 45%, transparent)) drop-shadow(0 24px 30px rgba(0,0,0,.5)); }
+.live-anchor .desk { position: absolute; left: -6%; right: -6%; bottom: -2px; height: 14%; min-height: 60px;
+  background: linear-gradient(180deg, #f4f7ff 0%, #c9d3ef 18%, #1c2a6b 19%, #0c1440 100%); border-radius: 10px 10px 0 0;
+  box-shadow: 0 -6px 30px rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; gap: 18px; overflow: hidden; }
+.live-anchor .desk b { font-family: var(--head); color: #fff; font-size: 44px; padding-top: 10px; }
+.live-anchor .desk span { font-weight: 900; color: var(--hl); font-size: 32px; padding-top: 10px; }
+.live-anchor[data-shot="B"] .desk { height: 12%; }
+.live-anchor[data-shot="B"] .desk b { font-size: 30px; } .live-anchor[data-shot="B"] .desk span { font-size: 24px; }
+.live-anchor[data-shot="B"] { border-right: 0; }
+.scene.shotA .panel, .scene.shotA .meme { visibility: hidden; }
+#grain { position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='256' height='256' filter='url(%23n)' opacity='.9'/></svg>"); }
+body.is-live #grain { opacity: .16; }
+body.is-live #anchor-dock { display: none; }

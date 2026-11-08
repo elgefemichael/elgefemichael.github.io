@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import audio, tts
+from . import audio, avatar, tts
 from .config import ANCHORS, BRAND, FPS, MAX_SECONDS, SR
 from .schema import Episode
 
@@ -100,6 +100,14 @@ def build(ep: Episode, workdir: Path, use_tts: bool = True) -> dict:
                       viz=it.viz.model_dump(exclude_none=True), meme=it.meme.model_dump(exclude_none=True) if it.meme else None)
         else:
             sc.update(cta=ep.outro.cta)
+        if avatar.enabled():
+            k = len(scenes)
+            seg_audio = workdir / f"seg{k:02d}_final.mp3"
+            if c["wav"] is not None:
+                audio.write_wav(workdir / "_seg.wav", c["wav"])
+                subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(workdir / "_seg.wav"), "-b:a", "192k", str(seg_audio)], check=True)
+            clip = avatar.make_clip(k, seg_audio, c["spk"], workdir)
+            sc["clip"] = {"src": str(clip.relative_to(workdir)), "at": round(speak_at, 3), "dur": round(c["dur"], 3)}
         scenes.append(sc)
         captions += _chunks(c["words"], c["spk"])
         voice_parts.append((speak_at, c["wav"]))
@@ -153,7 +161,7 @@ def build(ep: Episode, workdir: Path, use_tts: bool = True) -> dict:
     tl = {"brand": BRAND, "date_label": ep.date_label, "fps": FPS, "duration": duration, "anchors": a,
           "scenes": scenes, "captions": captions,
           "mouth": {k: [round(float(x), 3) for x in v] for k, v in mouth.items()},
-          "tts": use_tts}
+          "tts": use_tts, "live": avatar.enabled()}
     (workdir / "timeline.json").write_text(json.dumps(tl, ensure_ascii=False))
     return tl
 

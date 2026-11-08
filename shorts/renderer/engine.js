@@ -180,13 +180,14 @@
           w.style.transform = `translateY(${(1 - e) * 90}px) scale(${lerp(.4, 1, e)}) rotate(${(1 - e) * -8}deg)`;
           if (w.classList.contains("hl")) w.style.setProperty("--mk", E.outCubic(prog(lt, .55 + i * .07, .35)));
         });
-        updateViz(viz, panel, lt);
+        const vd = sc.viz_delay || 0, lv = lt - vd;
+        updateViz(viz, panel, lv);
         if (meme) {
-          const at = Math.min(dur * (sc.meme_at || .55), dur - 1.2);
-          const mk = prog(lt, at, .45);
+          const at = Math.min((dur - vd) * (sc.meme_at || .55), dur - vd - 1.2);
+          const mk = prog(lv, at, .45);
           const e = E.outElastic(mk);
           meme.style.opacity = mk > 0 ? 1 : 0;
-          meme.style.transform = `rotate(${lerp(-25, -5, e) + Math.sin(lt * 4) * 1.5}deg) scale(${e})`;
+          meme.style.transform = `rotate(${lerp(-25, -5, e) + Math.sin(lv * 4) * 1.5}deg) scale(${e})`;
         }
         // whole scene gets a subtle push-in so nothing is ever static
         root.style.transform = `scale(${1 + lt * .006})`;
@@ -283,9 +284,48 @@
       anchors[id] = a;
     }
     capEl = $("#captions .cap");
+    // live-action anchors: one keyed (alpha) video per spoken segment
+    if (ep.live) {
+      document.body.classList.add("is-live");
+      const dock = $("#live-dock");
+      scenes.forEach(s => {
+        if (!s.sc.clip) return;
+        const w = div("live-anchor", null, dock);
+        const v = document.createElement("video");
+        v.src = s.sc.clip.src; v.muted = true; v.preload = "auto"; v.playsInline = true;
+        w.appendChild(v);
+        div("desk", `<b>${esc(ep.brand || "")}</b><span>${esc((ep.anchors[s.sc.speaker] || {}).name || "")} 앵커</span>`, w);
+        s.live = { w, v };
+        if (s.sc.type === "news") s.sc.viz_delay = SHOT_A;
+      });
+    }
     scenes.forEach(s => { s.root.style.visibility = "visible"; s.fit(); s.root.style.visibility = "hidden"; });
     return true;
   };
+
+  // wait until every clip can be seeked
+  window.__ready = function () {
+    const vids = [...document.querySelectorAll("#live-dock video")];
+    return Promise.all(vids.map(v => v.readyState >= 2 ? 1 : new Promise((res, rej) => {
+      v.addEventListener("loadeddata", res, { once: true });
+      v.addEventListener("error", () => rej(new Error("clip failed: " + v.src)), { once: true });
+    })));
+  };
+
+  const SHOT_A = 1.6;   // news scenes open on a big studio shot of the anchor, then hard-cut to graphics
+  function liveLayout(s, lt) {
+    const sc = s.sc, st = s.live.w.style;
+    let x, y, w, h, shot;
+    if (sc.type === "news" && lt < SHOT_A) { shot = "A"; x = 90; y = 640; w = 900; h = 1000; }
+    else if (sc.type === "news") { shot = "B"; x = -10; y = 1010; w = 400; h = 520; }
+    else { shot = "C"; x = 190; y = sc.type === "outro" ? 1060 : 1000; w = 700; h = 620; }
+    st.left = x + "px"; st.top = y + "px"; st.width = w + "px"; st.height = h + "px";
+    // slow push-in inside each shot = handheld/studio camera feel
+    const since = shot === "B" ? lt - SHOT_A : lt;
+    st.transform = `scale(${1 + Math.min(since, 6) * .008})`;
+    s.live.w.dataset.shot = shot;
+    return shot;
+  }
 
   function sceneAt(t) {
     for (let i = scenes.length - 1; i >= 0; i--) if (t >= scenes[i].sc.start) return i;
@@ -301,12 +341,29 @@
   }
 
   // ---------- per-frame ----------
-  window.__seek = function (t) {
+  window.__seek = async function (t) {
     const idx = sceneAt(t);
     const cur = scenes[idx], sc = cur.sc;
     const lt = t - sc.start, dur = sc.end - sc.start;
     scenes.forEach((s, i) => (s.root.style.visibility = i === idx ? "visible" : "hidden"));
     cur.update(lt, dur);
+    let shot = null, seekP = null;
+    if (EP.live) {
+      scenes.forEach(s => s.live && (s.live.w.style.display = s === cur ? "block" : "none"));
+      if (cur.live) {
+        shot = liveLayout(cur, lt);
+        cur.root.classList.toggle("shotA", shot === "A");
+        const v = cur.live.v, c = cur.sc.clip;
+        const ct = clamp(t - c.at, 0, Math.max(0, (v.duration || c.dur) - 0.05));
+        if (Math.abs(v.currentTime - ct) > 1e-3) {
+          seekP = new Promise(res => { v.addEventListener("seeked", res, { once: true }); setTimeout(res, 3000); });
+          v.currentTime = ct;
+        }
+      }
+      // film grain + shared grade glue the real footage and the graphics together
+      const g = $("#grain");
+      g.style.backgroundPosition = `${Math.floor(rnd() * 256)}px ${Math.floor(rnd() * 256)}px`;
+    }
 
     // theme
     const th = THEMES[sc.category] || THEMES[sc.type === "news" ? "default" : "사회"] || THEMES.default;
@@ -333,8 +390,8 @@
     newsScenes.forEach((ns, i) => { segs[i].style.width = (prog(t, ns.start, ns.end - ns.start) * 100) + "%"; });
     $(".progress").style.opacity = prog(t, .3, .3);
 
-    // anchors placement
-    for (const id in anchors) {
+    // anchors placement (cartoon anchors only when there is no live footage)
+    if (!EP.live) for (const id in anchors) {
       const a = anchors[id], el = a.el;
       let vis = false, x = 24, y = 1060, s = 1, enter = 1;
       if (sc.type === "outro") {
@@ -358,6 +415,7 @@
     // captions
     const cap = $("#captions");
     cap.classList.toggle("full", sc.type === "outro");
+    cap.style.visibility = EP.live && (sc.type === "intro" || shot === "A") ? "hidden" : "visible";
     if (sc.type === "outro") { cap.style.top = "960px"; cap.style.height = "150px"; } else { cap.style.top = ""; cap.style.height = ""; }
     const ci = captionAt(t);
     if (ci !== capIdx) {
@@ -393,7 +451,9 @@
     // impact flash at the very start + on stamp hits
     let fl = Math.max(0, 1 - t / .18) * .9;
     if (sc.type === "news" && sc.viz && sc.viz.kind === "stamp") fl = Math.max(fl, .55 * (1 - prog(lt, .97, .2)) * (lt > .97 ? 1 : 0));
+    if (shot && sc.type === "news") fl = Math.max(fl, .35 * (1 - prog(lt, SHOT_A, .12)) * (lt >= SHOT_A ? 1 : 0));
     $("#flash").style.opacity = fl;
+    if (seekP) await seekP;
     return true;
   };
 

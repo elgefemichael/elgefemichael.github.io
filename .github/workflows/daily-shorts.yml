@@ -15,7 +15,7 @@ concurrency: daily-shorts
 jobs:
   make:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 75
     defaults:
       run:
         working-directory: shorts
@@ -45,6 +45,11 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           YT_PUBLISH_AT_KST: ${{ vars.YT_PUBLISH_AT_KST || '07:00' }}
+          # realistic anchors (set repository variable AVATAR_PROVIDER=heygen to enable)
+          AVATAR_PROVIDER: ${{ vars.AVATAR_PROVIDER || 'none' }}
+          HEYGEN_API_KEY: ${{ secrets.HEYGEN_API_KEY }}
+          HEYGEN_AVATAR_F: ${{ vars.HEYGEN_AVATAR_F }}
+          HEYGEN_AVATAR_M: ${{ vars.HEYGEN_AVATAR_M }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.upload }}" != "true" ]; then
             python -m pipeline.run_daily --no-upload --out runs/today

@@ -25,7 +25,10 @@ const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, de
 page.on("pageerror", e => console.error("[page]", e.message));
 await page.goto(pathToFileURL(resolve(here, "index.html")).href, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
+// clip paths in the timeline are relative to the timeline file
+for (const sc of ep.scenes) if (sc.clip) sc.clip.src = pathToFileURL(resolve(dirname(timelinePath), sc.clip.src)).href;
 await page.evaluate(ep => window.__load(ep), ep);
+await page.evaluate(() => window.__ready());
 
 if (stills) {
   const dir = opt("--still-dir", dirname(outPath));
