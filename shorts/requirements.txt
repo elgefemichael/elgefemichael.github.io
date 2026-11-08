@@ -1,0 +1,9 @@
+anthropic>=2.6
+pydantic>=2.8
+feedparser>=6.0
+edge-tts>=7.0
+numpy>=1.26
+scipy>=1.11
+google-api-python-client>=2.130
+google-auth>=2.30
+google-auth-oauthlib>=1.2

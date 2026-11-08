@@ -1,0 +1,5 @@
+runs/
+renderer/node_modules/
+renderer/package-lock.json
+__pycache__/
+client_secret*.json

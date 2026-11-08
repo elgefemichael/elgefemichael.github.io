@@ -1,0 +1,6 @@
+{
+  "name": "morning30-renderer",
+  "private": true,
+  "type": "module",
+  "dependencies": { "playwright": "1.49.1" }
+}

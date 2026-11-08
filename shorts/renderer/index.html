@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Morning30 Renderer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;800;900&display=block" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="frame">
+  <div id="bg">
+    <div class="bg-grad"></div>
+    <div class="bg-beams"><i></i><i></i><i></i></div>
+    <div class="bg-stripes"></div>
+    <div class="bg-floor"><div class="grid"></div></div>
+    <div class="bg-particles"></div>
+    <div class="bg-vignette"></div>
+  </div>
+  <div id="scenes"></div>
+  <div id="hud">
+    <div class="brand">
+      <div class="logo"><span class="bolt">⚡</span><span class="name"></span></div>
+      <div class="live"><i></i>LIVE</div>
+      <div class="date"></div>
+    </div>
+    <div class="progress"></div>
+  </div>
+  <div id="live-dock"></div>
+  <div id="anchor-dock"></div>
+  <div id="captions"><div class="cap"></div></div>
+  <div id="wipe"><i></i><i></i><i></i><i></i></div>
+  <div id="grain"></div>
+  <div id="flash"></div>
+</div>
+<script src="anchors.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>

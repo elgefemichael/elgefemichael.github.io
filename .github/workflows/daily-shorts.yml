@@ -1,0 +1,68 @@
+name: Daily morning shorts
+
+on:
+  schedule:
+    - cron: "0 20 * * *"      # 20:00 UTC = 05:00 KST
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Upload to YouTube"
+        type: boolean
+        default: true
+
+concurrency: daily-shorts
+
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    defaults:
+      run:
+        working-directory: shorts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: shorts/requirements.txt
+      - run: pip install -r requirements.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Renderer deps (Chromium + Korean/emoji fonts)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk fonts-noto-color-emoji
+          cd renderer && npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+
+      - name: Make (and upload) today's short
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_PUBLISH_AT_KST: ${{ vars.YT_PUBLISH_AT_KST || '07:00' }}
+          # realistic anchors (set repository variable AVATAR_PROVIDER=heygen to enable)
+          AVATAR_PROVIDER: ${{ vars.AVATAR_PROVIDER || 'none' }}
+          HEYGEN_API_KEY: ${{ secrets.HEYGEN_API_KEY }}
+          HEYGEN_AVATAR_F: ${{ vars.HEYGEN_AVATAR_F }}
+          HEYGEN_AVATAR_M: ${{ vars.HEYGEN_AVATAR_M }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.upload }}" != "true" ]; then
+            python -m pipeline.run_daily --no-upload --out runs/today
+          else
+            python -m pipeline.run_daily --out runs/today
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: short-${{ github.run_id }}
+          path: |
+            shorts/runs/today/short.mp4
+            shorts/runs/today/news.json
+            shorts/runs/today/episode.json
+          retention-days: 14
