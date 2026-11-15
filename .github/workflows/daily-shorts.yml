@@ -1,8 +1,7 @@
 name: Daily morning shorts
 
 on:
-  schedule:
-    - cron: "0 20 * * *"      # 20:00 UTC = 05:00 KST
+  # schedule turned off (re-enable by restoring the cron trigger)
   workflow_dispatch:
     inputs:
       upload:
